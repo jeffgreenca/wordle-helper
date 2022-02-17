@@ -63,7 +63,7 @@ if __name__ == "__main__":
     required = set()
     badpos = set()
     while True:
-        excluded = excluded.union(set(input(_prompt("tried", excluded))))
+        excluded = excluded.union(set(input(_prompt("excluded", excluded))))
         print(f"excluding {''.join(excluded)}")
         required = required.union(set(input(_prompt("required", required))))
         print(f"requiring  {''.join(required)}")
@@ -102,8 +102,10 @@ if __name__ == "__main__":
         cols = 14
 
         index = 1
-        for n in sorted(results, key=_ranker, reverse=True):
+        for n in sorted(results, key=_ranker, reverse=False):
             e = "\n" if index % cols == 0 else "\t"
+            if n in r:
+                n = n+"*"
             print(n, end=e)
             index += 1
 
