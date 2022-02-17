@@ -52,27 +52,29 @@ if __name__ == "__main__":
     m = load("5-ordered.txt", m)
     r = rank("5-ordered.txt")
 
-    # TODO:
-    #  - allow multiple bad positions
-    #  - validate input length and/or infer based on incomplete, so _x means _x___
-    #  - remember previous tried so only needs to input new untried
-    #  - sort based on frequency list, and indicate the frequency for ones found in frequency list
-    #  - pre-process data
-
     excluded = set()
     required = set()
     badpos = set()
     while True:
         excluded = excluded.union(set(input(_prompt("excluded", excluded))))
-        print(f"excluding {''.join(excluded)}")
-        required = required.union(set(input(_prompt("required", required))))
-        print(f"requiring  {''.join(required)}")
+        print(f"> excluding {''.join(excluded)}")
         goodpos = list(input("good positions: ").strip().ljust(5, "_"))
-        print(f"must match: {''.join(goodpos)}")
+        print(f"> must match: {''.join(goodpos)}")
         bp = input("bad positions: ").strip().ljust(5, "_")
         badpos.add(bp)
         for b in badpos:
-            print(f"cannot match: {b}")
+            print(f"> cannot match: {b}")
+
+        # compute required letters from good position and bad positions
+        for c in goodpos:
+            if c != "_":
+                required.add(c)
+        for b in badpos:
+            for c in b:
+                if c != "_":
+                    required.add(c)
+        print(f"> requiring  {''.join(required)}")
+        print()
 
         tested = 0
         found = 0
@@ -109,4 +111,4 @@ if __name__ == "__main__":
             print(n, end=e)
             index += 1
 
-        print("\n[%d/%d]" % (found, tested))
+        print("\n[%d/%d]\n" % (found, tested))
