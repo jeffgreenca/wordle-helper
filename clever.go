@@ -12,16 +12,25 @@ import (
 const (
 	NotInWord       = 'n'
 	WrongPosition   = '*'
-	CorrectPosition = 'Y'
+	CorrectPosition = 'y'
 )
 
 const wordsListFile = "5_most_common.txt"
 
+var words []string
+
 func main() {
 	fmt.Printf("Clever Helper v0.1\n\n")
 
+	words = loadWords(wordsListFile)
+
+	for {
+		do(words)
+	}
+}
+
+func do(words []string) {
 	rules := RuleSet{}
-	words := loadWords(wordsListFile)
 
 	fmt.Printf("Reference\n")
 	fmt.Printf("  %c = miss, not in word\n", NotInWord)
@@ -29,22 +38,17 @@ func main() {
 	fmt.Printf("  %c = correct letter and position\n", CorrectPosition)
 
 	for {
-		reader := bufio.NewReader(os.Stdin)
-
-		fmt.Printf("Attempt: ")
-		attempt, _ := reader.ReadString('\n')
-		attempt = strings.TrimSpace(attempt)
-
-		fmt.Printf("Result : ")
-		result, _ := reader.ReadString('\n')
-		result = strings.TrimSpace(result)
+		attempt, restart := ui("Attempt: ")
+		if restart {
+			break
+		}
+		result, _ := ui("Result: ")
 
 		newRules := generateRulesFromAttempt(attempt, result)
 		rules = append(rules, newRules...)
 		rules.Optimize()
 
-		hits := rules.FindWords(words, -1)
-		hitWords := hitsToWords(hits, words)
+		hitWords := rules.FindWords(words, -1)
 
 		fmt.Printf("\nPossible words: \n")
 		printList("  ", hitWords, 10)
@@ -55,6 +59,21 @@ func main() {
 
 		fmt.Println()
 	}
+}
+
+func ui(prompt string) (string, bool) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Printf(prompt)
+	s, _ := reader.ReadString('\n')
+	s = strings.TrimSpace(s)
+	if s == "new" {
+		return "", true
+	}
+	if len(s) != 5 {
+		fmt.Println("...please enter exactly 5 characters")
+		return ui(prompt)
+	}
+	return strings.ToLower(s), false
 }
 
 func printList(prefix string, list []string, limit int) {
@@ -138,8 +157,7 @@ func suggest(hitWords, allWords []string) []string {
 				}
 			}
 			rs := RuleSet{rule}
-			newHits := rs.FindWords(hitWords, -1)
-			newHitWords := hitsToWords(newHits, hitWords)
+			newHitWords := rs.FindWords(hitWords, -1)
 			scores = append(scores, ruleScore{Rule: rule, Score: score(hitWords, newHitWords)})
 		}
 	}
@@ -184,10 +202,10 @@ func suggest(hitWords, allWords []string) []string {
 	// 1. we could try to add more rules in other positions
 	// 2. we could try to replace a rule in a current position with a different rule
 	for {
-		valid := toRuleSet(filterRules).FindWords(allWords, 1)
+		valid := toRuleSet(filterRules).FindWords(allWords, 2)
 		if len(valid) > 0 {
 			// insert this rule at head of results
-			results = append([]string{allWords[valid[0]]}, results...)
+			results = append(valid, results...)
 		} else {
 			// no valid words, so we can give up or try something else
 			break
@@ -377,11 +395,11 @@ func (rs RuleSet) Optimize() {
 	})
 }
 
-func (rs RuleSet) FindWords(words []string, maxHits int) []int {
-	var result []int
-	for i, word := range words {
+func (rs RuleSet) FindWords(words []string, maxHits int) []string {
+	var result []string
+	for _, word := range words {
 		if rs.Validate(word) {
-			result = append(result, i)
+			result = append(result, word)
 		}
 		if len(result) == maxHits {
 			break
