@@ -1,5 +1,45 @@
 # wordle helper
 
+## newer (go) usage
+Clone this repo. Make sure you have Go 1.20 or better.
+
+```
+$ go run ./clever.go
+Clever Helper v0.1
+
+2024/10/19 01:08:04 loaded 39933 words from 5_most_common.txt
+Reference
+  n = miss, not in word
+  * = correct letter, wrong position
+  y = correct letter and position
+Attempt: bling
+Result : nyn**
+
+Possible words:      
+  gluon
+  glean
+  glsen
+  algan
+  rlngs
+  algun
+  elgon
+  glahn
+  algen
+  glnpo
+  elgan
+
+Suggested next guess:
+  asean
+  asean
+  ahern
+  again
+  asian
+  women
+
+Attempt:
+```
+
+# older python version
 ## usage
 ```
 $ python3 helper.py 

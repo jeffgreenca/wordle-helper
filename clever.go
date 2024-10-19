@@ -42,7 +42,10 @@ func do(words []string) {
 		if restart {
 			break
 		}
-		result, _ := ui("Result: ")
+		result, restart := ui("Result : ")
+		if restart {
+			break
+		}
 
 		newRules := generateRulesFromAttempt(attempt, result)
 		rules = append(rules, newRules...)
@@ -153,7 +156,7 @@ func suggest(hitWords, allWords []string) []string {
 			scores = append(scores, ruleScore{Rule: rule, Score: score(hitWords, newHitWords)})
 		}
 	}
-	log.Printf("found %d possible new rules", len(scores))
+	//log.Printf("found %d possible new rules", len(scores))
 
 	// sort the rules based on score so we can try the best ones first
 	rankedRules := []Rule{}
@@ -165,10 +168,10 @@ func suggest(hitWords, allWords []string) []string {
 	})
 
 	if len(rankedRules) == 0 {
-		log.Printf("can't suggest a word, no helpful rules found")
+		//log.Printf("can't suggest a word, no helpful rules found")
 		return results
 	}
-	log.Printf("found %d helpful rules from %d possible rules", len(rankedRules), len(scores))
+	//log.Printf("found %d helpful rules from %d possible rules", len(rankedRules), len(scores))
 
 	// step 2 - finding the best word to try, which would maximize our chance
 	// of learning positional data that is most helpful
