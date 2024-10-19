@@ -50,7 +50,6 @@ func main() {
 		printList("  ", hitWords, 10)
 
 		fmt.Printf("\nSuggested next guess:\n")
-		// guess := findBestDifferentiatorWord(hitWords, rules, words)
 		guesses := suggest(truncate(hitWords, 100), words)
 		printList("  ", guesses, 5)
 
@@ -235,79 +234,6 @@ func (rs RuleSet) Equal(other RuleSet) bool {
 		}
 	}
 	return true
-}
-
-func findBestDifferentiatorWord(hits []string, currentRuleSet RuleSet, allWords []string) string {
-	// what letters have we no information? check the ruleset
-	knownLetters := map[byte]bool{}
-	for _, rule := range currentRuleSet {
-		knownLetters[rule.Character] = true
-	}
-	unknownLetters := []byte{}
-	for c := byte('a'); c <= byte('z'); c++ {
-		if !knownLetters[c] {
-			unknownLetters = append(unknownLetters, c)
-		}
-	}
-
-	log.Printf("unknown letters: %s", unknownLetters)
-
-	// now we have a list of unknown letters
-	// we want the lowest frequency letter in the hits
-	// that is at least one of the hits
-	letterRank := map[byte]int{}
-	for _, letter := range unknownLetters {
-		score := 0
-		for hitRank, word := range hits {
-			if strings.IndexByte(word, letter) != -1 {
-				score += hitRank
-			}
-		}
-		letterRank[letter] = score
-	}
-
-	log.Printf("letter rank: %v", letterRank)
-
-	// remove letters that are not in any of the hits
-	bestLetters := []byte{}
-	for _, letter := range unknownLetters {
-		if letterRank[letter] > 0 {
-			bestLetters = append(bestLetters, letter)
-		}
-	}
-
-	sort.Slice(bestLetters, func(i, j int) bool {
-		return letterRank[bestLetters[i]] < letterRank[bestLetters[j]]
-	})
-
-	log.Printf("best letters: %s", bestLetters)
-
-	// now we progressively add the best letters to the ruleset
-	// and see how many valid words we get
-	// we stop trying when either:
-	// 1. we have added all the best differenator letters
-	// 2. we have stopped getting any words back
-	// 3. we exceed 5 letters
-
-	// let's work backwards. start up 5 differentators
-	rules := RuleSet{}
-	for i := 0; i < 5; i++ {
-		rules = append(rules, Rule{Type: RequiredAnywhere, Character: bestLetters[i]})
-	}
-	for i := 0; i < 4; i++ {
-		// test - did we get any valid words
-		hits := rules.FindWords(allWords, 1)
-		if len(hits) > 0 {
-			return allWords[hits[0]]
-		}
-		// nope, so remove the last rule (worst differentiator letter) and try again
-		log.Printf("no hits, removing rule")
-		rules = rules[:len(rules)-1]
-	}
-
-	// if we get here, this strategy didn't help
-	log.Printf("no hits, giving up")
-	return ""
 }
 
 func loadWords(filename string) []string {
