@@ -48,13 +48,13 @@ func do(words []string) {
 		rules = append(rules, newRules...)
 		rules.Optimize()
 
-		hitWords := rules.FindWords(words, -1)
+		found := rules.FindWords(words, -1)
 
 		fmt.Printf("\nPossible words: \n")
-		printList("  ", hitWords, 10)
+		printList("  ", found, 10)
 
 		fmt.Printf("\nSuggested next guess:\n")
-		guesses := suggest(truncate(hitWords, 100), words)
+		guesses := suggest(truncate(found, 100), words)
 		printList("  ", guesses, 5)
 
 		fmt.Println()
@@ -91,14 +91,6 @@ func truncate(s []string, limit int) []string {
 	} else {
 		return s
 	}
-}
-
-func hitsToWords(hits []int, words []string) []string {
-	var result []string
-	for _, i := range hits {
-		result = append(result, words[i])
-	}
-	return result
 }
 
 func score(rankedHitWords []string, newHitWords []string) int {
